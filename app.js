@@ -29,10 +29,10 @@ function generatePrompt() {
   if (baseData.length === 0) return alert("Loading data...");
 
   // REPLACE THESE: Match your Lark Column names exactly!
-  const light = getRandomFromColumn("Light"); 
-  const material = getRandomFromColumn("Material");
-  const color = getRandomFromColumn("Color");
-  const layout = getRandomFromColumn("Layout");
+  const light = getRandomFromColumn("Light and Atmosphere"); 
+  const material = getRandomFromColumn("Material Palette");
+  const color = getRandomFromColumn("Temperature and Color");
+  const layout = getRandomFromColumn("Layout and Human Presence");
 
   const result = `Light and Atmosphere: ${light}\n\nMaterial: ${material}\n\nColor: ${color}\n\nLayout: ${layout}`;
   document.getElementById("output").textContent = result;
