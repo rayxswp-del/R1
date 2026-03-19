@@ -1,39 +1,66 @@
-let baseData = [];
+let excelData = [];
 
+document.getElementById("fileInput").addEventListener("change", handleFile);
 document.getElementById("generateBtn").addEventListener("click", generatePrompt);
 
-// 1. Fetch from your Vercel API
-async function loadLarkData() {
-  try {
-    // This calls the file in your /api folder
-    const response = await fetch("/api/get-lark-data");
-    baseData = await response.json();
-    console.log("Lark Data Loaded");
-  } catch (error) {
-    console.error("Connection to Lark failed");
-  }
+// 1. Read Excel
+function handleFile(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function (event) {
+    const data = new Uint8Array(event.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    // Convert to array
+    excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    console.log("Excel Loaded:", excelData);
+  };
+
+  reader.readAsArrayBuffer(file);
 }
 
-loadLarkData();
+// 2. Random generator
+function getRandomFromColumn(colIndex) {
+  const values = excelData
+    .map(row => row[colIndex])
+    .filter(v => v !== undefined && v !== "");
 
-function getRandomFromColumn(fieldName) {
-  const values = baseData
-    .map(row => row.fields[fieldName]) 
-    .filter(v => v !== undefined && v !== null && v !== "");
-    
   if (values.length === 0) return "N/A";
-  return values[Math.floor(Math.random() * values.length)];
+
+  const randomIndex = Math.floor(Math.random() * values.length);
+  return values[randomIndex];
 }
 
+// 3. Generate output
 function generatePrompt() {
-  if (baseData.length === 0) return alert("Loading data...");
+  if (excelData.length === 0) {
+    alert("Please upload Excel first");
+    return;
+  }
 
-  // REPLACE THESE: Match your Lark Column names exactly!
-  const light = getRandomFromColumn("Light and Atmosphere"); 
-  const material = getRandomFromColumn("Material Palette");
-  const color = getRandomFromColumn("Temperature and Color");
-  const layout = getRandomFromColumn("Layout and Human Presence");
+  // Column index (E=4, F=5, G=6, H=7)
+  const light = getRandomFromColumn(4);
+  const material = getRandomFromColumn(5);
+  const color = getRandomFromColumn(6);
+  const layout = getRandomFromColumn(7);
 
-  const result = `Light and Atmosphere: ${light}\n\nMaterial: ${material}\n\nColor: ${color}\n\nLayout: ${layout}`;
+  const result = 
+`Light and Atmosphere:
+${light}
+
+Material Palette:
+${material}
+
+Temperature and Color:
+${color}
+
+Layout and Human Presence:
+${layout}`;
+
   document.getElementById("output").textContent = result;
 }
