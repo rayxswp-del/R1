@@ -1,9 +1,8 @@
-let excelData = [];
+let structuredData = [];
 
 document.getElementById("fileInput").addEventListener("change", handleFile);
 document.getElementById("generateBtn").addEventListener("click", generatePrompt);
 
-// 1. Read Excel
 function handleFile(e) {
   const file = e.target.files[0];
   const reader = new FileReader();
@@ -12,55 +11,74 @@ function handleFile(e) {
     const data = new Uint8Array(event.target.result);
     const workbook = XLSX.read(data, { type: "array" });
 
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // Convert to array
-    excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    structuredData = rows.map(row => ({
+      light: row[4],
+      material: row[5],
+      color: row[6],
+      layout: row[7],
+      tags: {
+        B: row[1],
+        G: row[6],
+        I: row[8]
+      }
+    })).filter(r => r.material); // remove empty rows
 
-    console.log("Excel Loaded:", excelData);
+    console.log(structuredData);
   };
 
   reader.readAsArrayBuffer(file);
 }
 
-// 2. Random generator
-function getRandomFromColumn(colIndex) {
-  const values = excelData
-    .map(row => row[colIndex])
-    .filter(v => v !== undefined && v !== "");
-
-  if (values.length === 0) return "N/A";
-
-  const randomIndex = Math.floor(Math.random() * values.length);
-  return values[randomIndex];
+// random item
+function getRandomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// 3. Generate output
 function generatePrompt() {
-  if (excelData.length === 0) {
-    alert("Please upload Excel first");
+  if (structuredData.length === 0) {
+    alert("Upload Excel first");
     return;
   }
 
-  // Column index (E=4, F=5, G=6, H=7)
-  const light = getRandomFromColumn(4);
-  const material = getRandomFromColumn(5);
-  const color = getRandomFromColumn(6);
-  const layout = getRandomFromColumn(7);
+  // pick one full row
+  const main = getRandomItem(structuredData);
 
-  const result = 
+  // pick 3 layout options (different rows)
+  const layouts = [];
+  while (layouts.length < 3) {
+    const item = getRandomItem(structuredData);
+    if (!layouts.includes(item.layout)) {
+      layouts.push(item.layout);
+    }
+  }
+
+  // output text
+  const result =
 `Light and Atmosphere:
-${light}
+${main.light}
 
 Material Palette:
-${material}
+${main.material}
 
 Temperature and Color:
-${color}
+${main.color}
 
 Layout and Human Presence:
-${layout}`;
+1. ${layouts[0]}
+2. ${layouts[1]}
+3. ${layouts[2]}`;
 
   document.getElementById("output").textContent = result;
+
+  // render tags
+  renderTags(main.tags);
+}
+
+function renderTags(tags) {
+  document.getElementById("tagB").textContent = tags.B || "N/A";
+  document.getElementById("tagG").textContent = tags.G || "N/A";
+  document.getElementById("tagI").textContent = tags.I || "N/A";
 }
