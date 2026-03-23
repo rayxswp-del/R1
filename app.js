@@ -64,8 +64,8 @@ function generatePrompt() {
   }
 
   const tagB = selectedRow[1] || "N/A";
-  const tagI = selectedRow[9] || "N/A";
-  const tagJ = selectedRow[10] || "N/A";
+  const tagI = selectedRow[8] || "N/A";
+  const tagJ = selectedRow[9] || "N/A";
 
   // 🔹 OUTPUT FORMAT (STRICT)
   const result =
