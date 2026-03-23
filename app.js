@@ -1,8 +1,9 @@
-let structuredData = [];
+let rawData = [];
 
 document.getElementById("fileInput").addEventListener("change", handleFile);
 document.getElementById("generateBtn").addEventListener("click", generatePrompt);
 
+// Load Excel
 function handleFile(e) {
   const file = e.target.files[0];
   const reader = new FileReader();
@@ -12,73 +13,83 @@ function handleFile(e) {
     const workbook = XLSX.read(data, { type: "array" });
 
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    structuredData = rows.map(row => ({
-      light: row[4],
-      material: row[5],
-      color: row[6],
-      layout: row[7],
-      tags: {
-        B: row[1],
-        G: row[6],
-        I: row[8]
-      }
-    })).filter(r => r.material); // remove empty rows
-
-    console.log(structuredData);
+    console.log("Loaded:", rawData);
   };
 
   reader.readAsArrayBuffer(file);
 }
 
-// random item
-function getRandomItem(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+// Get random cell from column
+function getRandomFromColumn(colIndex) {
+  const values = rawData
+    .map(row => row[colIndex])
+    .filter(v => v !== undefined && v !== "");
+
+  return values[Math.floor(Math.random() * values.length)];
 }
 
+// Get random row (for tag linking)
+function getRandomRowWithMaterial() {
+  const validRows = rawData.filter(row => row[5]); // column F (Material)
+  return validRows[Math.floor(Math.random() * validRows.length)];
+}
+
+// Generate
 function generatePrompt() {
-  if (structuredData.length === 0) {
+  if (rawData.length === 0) {
     alert("Upload Excel first");
     return;
   }
 
-  // pick one full row
-  const main = getRandomItem(structuredData);
+  // 🔹 MAIN REQUIREMENT (independent random)
+  const light = getRandomFromColumn(4);   // E
+  const material = getRandomFromColumn(5); // F
+  const color = getRandomFromColumn(6);   // G
+  const layoutMain = getRandomFromColumn(7); // H
 
-  // pick 3 layout options (different rows)
+  // 🔹 EXTRA: 3 layout options
   const layouts = [];
   while (layouts.length < 3) {
-    const item = getRandomItem(structuredData);
-    if (!layouts.includes(item.layout)) {
-      layouts.push(item.layout);
-    }
+    const l = getRandomFromColumn(7);
+    if (!layouts.includes(l)) layouts.push(l);
   }
 
-  // output text
+  // 🔹 FIND ROW MATCHING MATERIAL (for tags)
+  let selectedRow = rawData.find(row => row[5] === material);
+
+  if (!selectedRow) {
+    selectedRow = getRandomRowWithMaterial();
+  }
+
+  const tagB = selectedRow[1] || "N/A";
+  const tagG = selectedRow[6] || "N/A";
+  const tagI = selectedRow[8] || "N/A";
+
+  // 🔹 OUTPUT FORMAT (STRICT)
   const result =
 `Light and Atmosphere:
-${main.light}
+${light}
 
 Material Palette:
-${main.material}
+${material}
 
 Temperature and Color:
-${main.color}
+${color}
 
 Layout and Human Presence:
+${layoutMain}
+
+--- Alternatives ---
 1. ${layouts[0]}
 2. ${layouts[1]}
 3. ${layouts[2]}`;
 
   document.getElementById("output").textContent = result;
 
-  // render tags
-  renderTags(main.tags);
-}
-
-function renderTags(tags) {
-  document.getElementById("tagB").textContent = tags.B || "N/A";
-  document.getElementById("tagG").textContent = tags.G || "N/A";
-  document.getElementById("tagI").textContent = tags.I || "N/A";
+  // 🔹 UPDATE TAG UI
+  document.getElementById("tagB").textContent = tagB;
+  document.getElementById("tagG").textContent = tagG;
+  document.getElementById("tagI").textContent = tagI;
 }
