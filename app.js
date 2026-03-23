@@ -64,8 +64,8 @@ function generatePrompt() {
   }
 
   const tagB = selectedRow[1] || "N/A";
-  const tagG = selectedRow[6] || "N/A";
   const tagI = selectedRow[8] || "N/A";
+  const tagJ = selectedRow[9] || "N/A";
 
   // 🔹 OUTPUT FORMAT (STRICT)
   const result =
@@ -90,6 +90,6 @@ ${layoutMain}
 
   // 🔹 UPDATE TAG UI
   document.getElementById("tagB").textContent = tagB;
-  document.getElementById("tagG").textContent = tagG;
   document.getElementById("tagI").textContent = tagI;
+  document.getElementById("tagJ").textContent = tagJ;
 }
