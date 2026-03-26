@@ -12,9 +12,19 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <h3>Tags</h3>
+
     <div class="tag-box" id="tagB">-</div>
+    <div class="tag-box" id="tagG">-</div>
     <div class="tag-box" id="tagI">-</div>
-    <div class="tag-box" id="tagJ">-</div>
+
+    <h3>Replace</h3>
+
+    <button class="btn light" onclick="replaceContent('light')">Replace Light</button>
+    <button class="btn material" onclick="replaceContent('material')">Replace Material</button>
+    <button class="btn color" onclick="replaceContent('color')">Replace Color</button>
+    <button class="btn layout" onclick="replaceContent('layout')">Replace Layout</button>
+
+    <button class="btn layout-set" onclick="replaceLayouts()">New Layout Set</button>
   </div>
 
   <!-- Main -->
@@ -22,14 +32,16 @@
     <h1>Prompt Generator</h1>
 
     <input type="file" id="fileInput" accept=".xlsx" />
-    <button id="generateBtn">Generate</button>
+    <button onclick="generatePrompt()">Generate</button>
+    <button onclick="copyMain()">Copy Main</button>
 
     <pre id="output"></pre>
+
+    <div id="alternatives"></div>
   </div>
 
 </div>
 
-<!-- SheetJS -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 
