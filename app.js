@@ -1,11 +1,15 @@
 let rawData = [];
 
-document.getElementById("fileInput").addEventListener("change", handleFile);
-document.getElementById("generateBtn").addEventListener("click", generatePrompt);
+let current = {
+  light: "",
+  material: "",
+  color: "",
+  layout: ""
+};
 
-// Load Excel
+document.getElementById("fileInput").addEventListener("change", handleFile);
+
 function handleFile(e) {
-  const file = e.target.files[0];
   const reader = new FileReader();
 
   reader.onload = function (event) {
@@ -14,82 +18,100 @@ function handleFile(e) {
 
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    console.log("Loaded:", rawData);
   };
 
-  reader.readAsArrayBuffer(file);
+  reader.readAsArrayBuffer(e.target.files[0]);
 }
 
-// Get random cell from column
-function getRandomFromColumn(colIndex) {
-  const values = rawData
-    .map(row => row[colIndex])
-    .filter(v => v !== undefined && v !== "");
-
-  return values[Math.floor(Math.random() * values.length)];
+// random column
+function getRandom(col) {
+  return rawData
+    .map(r => r[col])
+    .filter(v => v)
+    [Math.floor(Math.random() * rawData.length)];
 }
 
-// Get random row (for tag linking)
-function getRandomRowWithMaterial() {
-  const validRows = rawData.filter(row => row[5]); // column F (Material)
-  return validRows[Math.floor(Math.random() * validRows.length)];
-}
-
-// Generate
+// generate
 function generatePrompt() {
-  if (rawData.length === 0) {
-    alert("Upload Excel first");
-    return;
-  }
 
-  // 🔹 MAIN REQUIREMENT (independent random)
-  const light = getRandomFromColumn(4);   // E
-  const material = getRandomFromColumn(5); // F
-  const color = getRandomFromColumn(6);   // G
-  const layoutMain = getRandomFromColumn(7); // H
+  current.light = getRandom(4);
+  current.material = getRandom(5);
+  current.color = getRandom(6);
+  current.layout = getRandom(7);
 
-  // 🔹 EXTRA: 3 layout options
-  const layouts = [];
-  while (layouts.length < 3) {
-    const l = getRandomFromColumn(7);
-    if (!layouts.includes(l)) layouts.push(l);
-  }
+  updateTags();
+  renderMain();
+  renderAlternatives();
+}
 
-  // 🔹 FIND ROW MATCHING MATERIAL (for tags)
-  let selectedRow = rawData.find(row => row[5] === material);
-
-  if (!selectedRow) {
-    selectedRow = getRandomRowWithMaterial();
-  }
-
-  const tagB = selectedRow[1] || "N/A";
-  const tagI = selectedRow[8] || "N/A";
-  const tagJ = selectedRow[9] || "N/A";
-
-  // 🔹 OUTPUT FORMAT (STRICT)
-  const result =
+// render main
+function renderMain() {
+  document.getElementById("output").textContent =
 `Light and Atmosphere:
-${light}
+${current.light}
 
 Material Palette:
-${material}
+${current.material}
 
 Temperature and Color:
-${color}
+${current.color}
 
 Layout and Human Presence:
-${layoutMain}
+${current.layout}`;
+}
 
---- Alternatives ---
-1. ${layouts[0]}
-2. ${layouts[1]}
-3. ${layouts[2]}`;
+// alternatives
+function renderAlternatives() {
+  const container = document.getElementById("alternatives");
+  container.innerHTML = "";
 
-  document.getElementById("output").textContent = result;
+  for (let i = 0; i < 3; i++) {
+    const layout = getRandom(7);
 
-  // 🔹 UPDATE TAG UI
-  document.getElementById("tagB").textContent = tagB;
-  document.getElementById("tagI").textContent = tagI;
-  document.getElementById("tagJ").textContent = tagJ;
+    const div = document.createElement("div");
+    div.className = "alt-item";
+
+    div.innerHTML = `
+      ${layout}
+      <br>
+      <button onclick="copyText('${layout}')">Copy</button>
+    `;
+
+    container.appendChild(div);
+  }
+}
+
+// replace
+function replaceContent(type) {
+  if (type === "light") current.light = getRandom(4);
+  if (type === "material") current.material = getRandom(5);
+  if (type === "color") current.color = getRandom(6);
+  if (type === "layout") current.layout = getRandom(7);
+
+  updateTags();
+  renderMain();
+}
+
+// replace layout set
+function replaceLayouts() {
+  renderAlternatives();
+}
+
+// tags (UPDATED: G → J = column 9)
+function updateTags() {
+  const row = rawData.find(r => r[5] === current.material) || [];
+
+  document.getElementById("tagB").textContent = row[1] || "-";
+  document.getElementById("tagG").textContent = row[9] || "-";
+  document.getElementById("tagI").textContent = row[8] || "-";
+}
+
+// copy main
+function copyMain() {
+  navigator.clipboard.writeText(document.getElementById("output").textContent);
+}
+
+// copy alt
+function copyText(text) {
+  navigator.clipboard.writeText(text);
 }
