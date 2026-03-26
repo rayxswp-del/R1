@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #f4f4f4;
 }
 
@@ -9,45 +9,62 @@ body {
   height: 100vh;
 }
 
-/* Sidebar */
+/* Sidebar (30% narrower) */
 .sidebar {
-  width: 220px;
+  width: 150px;
   background: #111;
   color: white;
-  padding: 20px;
-}
-
-.sidebar h3 {
-  margin-bottom: 20px;
+  padding: 15px;
 }
 
 /* Tag boxes */
 .tag-box {
   background: #222;
-  padding: 20px;
-  margin-bottom: 15px;
-  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
   text-align: center;
-  font-size: 14px;
 }
+
+/* Buttons */
+.btn {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  color: white;
+}
+
+/* Color-coded buttons */
+.light { background: #f39c12; }
+.material { background: #27ae60; }
+.color { background: #2980b9; }
+.layout { background: #8e44ad; }
+.layout-set { background: #c0392b; }
 
 /* Main */
 .main {
   flex: 1;
-  padding: 40px;
-}
-
-button {
-  margin-left: 10px;
-  padding: 8px 16px;
-  cursor: pointer;
+  padding: 30px;
 }
 
 pre {
-  margin-top: 20px;
-  padding: 20px;
   background: white;
+  padding: 20px;
   border-radius: 8px;
   white-space: pre-wrap;
-  line-height: 1.6;
+}
+
+/* Alternatives spacing */
+.alt-item {
+  background: white;
+  margin-top: 30px;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.alt-item button {
+  margin-top: 10px;
 }
